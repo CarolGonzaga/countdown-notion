@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Countdown para Notion</title>
+    <meta
+      name="description"
+      content="Temporizador com contagem regressiva, alarme e notificações para incorporar no Notion."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="timer-card" aria-labelledby="timer-title">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Countdown</p>
+            <h1 id="timer-title">Temporizador para Notion</h1>
+          </div>
+          <button id="themeToggle" class="ghost-button" type="button" aria-label="Alternar tema">
+            <span aria-hidden="true">☼</span>
+          </button>
+        </div>
+
+        <div class="display-wrapper" aria-live="polite" aria-atomic="true">
+          <p id="status" class="status">Pronto para começar</p>
+          <div id="timeDisplay" class="time-display">25:00</div>
+          <p class="helper-text">Selecione um tempo, inicie a contagem e receba um alerta ao zerar.</p>
+        </div>
+
+        <form id="timerForm" class="controls-panel">
+          <div class="input-grid">
+            <label class="input-group">
+              <span>Minutos</span>
+              <input id="minutesInput" type="number" min="0" max="999" inputmode="numeric" value="25" />
+            </label>
+
+            <label class="input-group">
+              <span>Segundos</span>
+              <input id="secondsInput" type="number" min="0" max="59" inputmode="numeric" value="0" />
+            </label>
+          </div>
+
+          <div class="preset-row" aria-label="Tempos rápidos">
+            <button class="preset-button" type="button" data-minutes="5">5 min</button>
+            <button class="preset-button" type="button" data-minutes="10">10 min</button>
+            <button class="preset-button" type="button" data-minutes="25">25 min</button>
+            <button class="preset-button" type="button" data-minutes="50">50 min</button>
+          </div>
+
+          <div class="action-grid">
+            <button id="startButton" class="primary-button" type="submit">Iniciar</button>
+            <button id="pauseButton" class="secondary-button" type="button">Pausar</button>
+            <button id="resetButton" class="secondary-button" type="button">Resetar</button>
+          </div>
+
+          <div class="notification-panel">
+            <div>
+              <p class="notification-title">Notificação do navegador</p>
+              <p id="notificationHint" class="notification-copy">
+                Ative para receber um aviso visual quando o tempo terminar.
+              </p>
+            </div>
+            <button id="notificationButton" class="ghost-button wide" type="button">
+              Ativar notificações
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
