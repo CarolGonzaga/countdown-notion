@@ -1,6 +1,6 @@
 # Countdown para Notion
 
-Temporizador simples em HTML, CSS e JavaScript, pensado para ser hospedado no GitHub e publicado na Vercel para depois ser incorporado no Notion via embed.
+Temporizador simples em HTML, CSS e JavaScript, pensado para ser hospedado no GitHub para depois ser incorporado no Notion via embed.
 
 ## Funcionalidades
 
