@@ -1,258 +1,187 @@
-const timeDisplay = document.getElementById('timeDisplay');
-const minutesInput = document.getElementById('minutesInput');
-const secondsInput = document.getElementById('secondsInput');
+const timeDisplay = document.getElementById("timeDisplay")
 
-const startBtn = document.getElementById('startBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const resetBtn = document.getElementById('resetBtn');
+const minutesInput = document.getElementById("minutesInput")
+const secondsInput = document.getElementById("secondsInput")
 
-const settingsToggle = document.getElementById('settingsToggle');
-const settingsPanel = document.getElementById('settingsPanel');
+const startBtn = document.getElementById("startBtn")
+const pauseBtn = document.getElementById("pauseBtn")
+const resetBtn = document.getElementById("resetBtn")
 
-const themeToggle = document.getElementById('themeToggle');
+const settingsToggle = document.getElementById("settingsToggle")
+const settingsPanel = document.getElementById("settingsPanel")
 
-const notifyBtn = document.getElementById('notifyBtn');
-const presetButtons = document.querySelectorAll('.preset-button');
+const themeToggle = document.getElementById("themeToggle")
 
-let totalSeconds = 25 * 60;
-let remainingSeconds = totalSeconds;
-let timerInterval = null;
-let endTime = null;
-let isRunning = false;
+const presetButtons = document.querySelectorAll(".preset-button")
 
-const savedTheme = localStorage.getItem('countdown-theme');
-if (savedTheme === 'light') {
-  document.body.classList.add('light');
+const soundSelect = document.getElementById("soundSelect")
+const testSoundBtn = document.getElementById("testSoundBtn")
+
+let remainingSeconds = 25 * 60
+let timer = null
+
+function formatTime(seconds){
+
+const m = Math.floor(seconds / 60)
+const s = seconds % 60
+
+return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`
+
 }
 
-function formatTime(seconds) {
-  const safeSeconds = Math.max(0, seconds);
-  const minutes = Math.floor(safeSeconds / 60);
-  const secs = safeSeconds % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+function updateDisplay(){
+
+timeDisplay.textContent = formatTime(remainingSeconds)
+
 }
 
-function updateDisplay() {
-  timeDisplay.textContent = formatTime(remainingSeconds);
-  document.title = `${formatTime(remainingSeconds)} • Countdown`;
+function playAlarm(){
+
+const type = soundSelect.value
+
+if(type === "ana"){
+
+const audio = new Audio("sounds/ana.mp3")
+audio.volume = 0.7
+audio.play().catch(()=>{})
+
+return
+
 }
 
-function syncInputsFromTimer() {
-  minutesInput.value = Math.floor(totalSeconds / 60);
-  secondsInput.value = totalSeconds % 60;
+const AudioContextClass = window.AudioContext || window.webkitAudioContext
+
+if(!AudioContextClass) return
+
+const audioContext = new AudioContextClass()
+
+function beep(freq,duration,delay){
+
+const osc = audioContext.createOscillator()
+const gain = audioContext.createGain()
+
+osc.type="sine"
+osc.frequency.value=freq
+
+osc.connect(gain)
+gain.connect(audioContext.destination)
+
+const start=audioContext.currentTime+delay
+const end=start+duration
+
+gain.gain.setValueAtTime(.001,start)
+gain.gain.exponentialRampToValueAtTime(.18,start+.02)
+gain.gain.exponentialRampToValueAtTime(.001,end)
+
+osc.start(start)
+osc.stop(end)
+
 }
 
-function syncTimerFromInputs() {
-  const minutes = Number(minutesInput.value) || 0;
-  const seconds = Number(secondsInput.value) || 0;
+if(type==="system"){
 
-  const normalizedSeconds = Math.min(Math.max(seconds, 0), 59);
-  secondsInput.value = normalizedSeconds;
+beep(880,.18,0)
+beep(660,.18,.22)
 
-  totalSeconds = Math.min((minutes * 60) + normalizedSeconds, 359999);
-  remainingSeconds = totalSeconds;
-
-  updateDisplay();
 }
 
-function stopFinishedState() {
-  document.body.classList.remove('finished');
+if(type==="chime"){
+
+beep(880,.25,0)
+beep(1174,.35,.28)
+
 }
 
-function playAlarm() {
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+if(type==="digital"){
 
-  if (!AudioContextClass) {
-    return;
-  }
+beep(1000,.12,0)
+beep(1000,.12,.16)
+beep(1000,.12,.32)
 
-  const audioContext = new AudioContextClass();
-
-  if (audioContext.state === 'suspended') {
-    audioContext.resume();
-  }
-
-  let delay = 0;
-
-  [880, 659, 880, 659].forEach((frequency) => {
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.type = 'sine';
-    oscillator.frequency.value = frequency;
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    const startAt = audioContext.currentTime + delay;
-    const endAt = startAt + 0.22;
-
-    gainNode.gain.setValueAtTime(0.0001, startAt);
-    gainNode.gain.exponentialRampToValueAtTime(0.18, startAt + 0.03);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, endAt);
-
-    oscillator.start(startAt);
-    oscillator.stop(endAt);
-
-    delay += 0.24;
-  });
 }
 
-function sendNotification() {
-  if (!('Notification' in window) || Notification.permission !== 'granted') {
-    return;
-  }
-
-  const notification = new Notification('Tempo finalizado', {
-    body: 'Seu temporizador chegou a 0:00.',
-    icon: 'https://www.notion.so/images/favicon.ico',
-    tag: 'countdown-notification',
-  });
-
-  setTimeout(() => notification.close(), 6000);
 }
 
-function updateNotificationButton() {
-  if (!('Notification' in window)) {
-    notifyBtn.textContent = 'Indisponível';
-    notifyBtn.disabled = true;
-    return;
-  }
+function testSound(){
 
-  if (Notification.permission === 'granted') {
-    notifyBtn.textContent = 'Ativas';
-    notifyBtn.disabled = true;
-    return;
-  }
+playAlarm()
 
-  if (Notification.permission === 'denied') {
-    notifyBtn.textContent = 'Bloqueadas';
-    notifyBtn.disabled = true;
-    return;
-  }
-
-  notifyBtn.textContent = 'Ativar';
-  notifyBtn.disabled = false;
 }
 
-function finishTimer() {
-  clearInterval(timerInterval);
-  timerInterval = null;
-  isRunning = false;
-  remainingSeconds = 0;
+function startTimer(){
 
-  updateDisplay();
-  document.body.classList.add('finished');
+if(timer) return
 
-  playAlarm();
-  sendNotification();
+remainingSeconds =
+Number(minutesInput.value)*60 + Number(secondsInput.value)
+
+timer = setInterval(()=>{
+
+remainingSeconds--
+
+updateDisplay()
+
+if(remainingSeconds<=0){
+
+clearInterval(timer)
+timer=null
+
+playAlarm()
+
 }
 
-function tick() {
-  const difference = Math.max(0, Math.round((endTime - Date.now()) / 1000));
-  remainingSeconds = difference;
-  updateDisplay();
+},1000)
 
-  if (difference <= 0) {
-    finishTimer();
-  }
 }
 
-function startTimer() {
-  if (isRunning) {
-    return;
-  }
+function pauseTimer(){
 
-  if (remainingSeconds <= 0) {
-    syncTimerFromInputs();
-  }
+clearInterval(timer)
+timer=null
 
-  if (remainingSeconds <= 0) {
-    return;
-  }
-
-  stopFinishedState();
-  isRunning = true;
-  endTime = Date.now() + (remainingSeconds * 1000);
-  timerInterval = setInterval(tick, 250);
-  tick();
 }
 
-function pauseTimer() {
-  if (!isRunning) {
-    return;
-  }
+function resetTimer(){
 
-  clearInterval(timerInterval);
-  timerInterval = null;
-  isRunning = false;
+clearInterval(timer)
+timer=null
 
-  const difference = Math.max(0, Math.round((endTime - Date.now()) / 1000));
-  remainingSeconds = difference;
-  updateDisplay();
+remainingSeconds=
+Number(minutesInput.value)*60 + Number(secondsInput.value)
+
+updateDisplay()
+
 }
 
-function resetTimer() {
-  clearInterval(timerInterval);
-  timerInterval = null;
-  isRunning = false;
+presetButtons.forEach(btn=>{
 
-  syncTimerFromInputs();
-  stopFinishedState();
-}
+btn.addEventListener("click",()=>{
 
-function toggleSettings() {
-  const isHidden = settingsPanel.hasAttribute('hidden');
+minutesInput.value = btn.dataset.min
+secondsInput.value = 0
 
-  if (isHidden) {
-    settingsPanel.removeAttribute('hidden');
-    settingsToggle.setAttribute('aria-expanded', 'true');
-    return;
-  }
+resetTimer()
 
-  settingsPanel.setAttribute('hidden', '');
-  settingsToggle.setAttribute('aria-expanded', 'false');
-}
+})
 
-async function requestNotificationPermission() {
-  if (!('Notification' in window)) {
-    updateNotificationButton();
-    return;
-  }
+})
 
-  const permission = await Notification.requestPermission();
-  updateNotificationButton();
+startBtn.addEventListener("click",startTimer)
+pauseBtn.addEventListener("click",pauseTimer)
+resetBtn.addEventListener("click",resetTimer)
 
-  if (permission === 'granted') {
-    sendNotification();
-  }
-}
+settingsToggle.addEventListener("click",()=>{
 
-presetButtons.forEach((button) => {
-  button.addEventListener('click', () => {
-    const minutes = Number(button.dataset.min || 0);
-    minutesInput.value = minutes;
-    secondsInput.value = 0;
-    resetTimer();
-  });
-});
+settingsPanel.toggleAttribute("hidden")
 
-startBtn.addEventListener('click', startTimer);
-pauseBtn.addEventListener('click', pauseTimer);
-resetBtn.addEventListener('click', resetTimer);
+})
 
-minutesInput.addEventListener('change', resetTimer);
-secondsInput.addEventListener('change', resetTimer);
+themeToggle.addEventListener("click",()=>{
 
-settingsToggle.addEventListener('click', toggleSettings);
-notifyBtn.addEventListener('click', requestNotificationPermission);
+document.body.classList.toggle("light")
 
-themeToggle.addEventListener('click', () => {
-  document.body.classList.toggle('light');
-  const currentTheme = document.body.classList.contains('light') ? 'light' : 'dark';
-  localStorage.setItem('countdown-theme', currentTheme);
-});
+})
 
-syncInputsFromTimer();
-updateDisplay();
-updateNotificationButton();
+testSoundBtn.addEventListener("click",testSound)
+
+updateDisplay()

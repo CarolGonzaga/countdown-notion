@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Ana's Countdown</title>
 
     <link rel="stylesheet" href="style.css" />
@@ -16,9 +17,8 @@
             <div id="timeDisplay" class="time-display">00:00</div>
 
             <div class="manual-inputs">
-              <label class="input-group inline-group">
-                <span>Minutos</span>
-
+              <label class="input-group">
+                <span>Min</span>
                 <input
                   id="minutesInput"
                   type="number"
@@ -28,9 +28,8 @@
                 />
               </label>
 
-              <label class="input-group inline-group">
-                <span>Segundos</span>
-
+              <label class="input-group">
+                <span>Seg</span>
                 <input
                   id="secondsInput"
                   type="number"
@@ -45,26 +44,17 @@
 
         <div class="preset-row">
           <button class="preset-button" data-min="5">5min</button>
-
           <button class="preset-button" data-min="10">10min</button>
-
           <button class="preset-button" data-min="25">25min</button>
-
           <button class="preset-button" data-min="50">50min</button>
         </div>
 
         <div class="action-row">
-          <button id="startBtn" class="primary-button small-button">
-            Iniciar
-          </button>
+          <button id="startBtn" class="primary-button">Iniciar</button>
 
-          <button id="pauseBtn" class="secondary-button small-button">
-            Pausar
-          </button>
+          <button id="pauseBtn" class="secondary-button">Pausar</button>
 
-          <button id="resetBtn" class="ghost-button small-button">
-            Resetar
-          </button>
+          <button id="resetBtn" class="ghost-button">Resetar</button>
         </div>
 
         <div class="panel-toolbar">
@@ -82,18 +72,38 @@
         </div>
 
         <div id="settingsPanel" class="settings-panel" hidden>
-          <div class="compact-notification">
-            <div>
-              <div class="notification-title">Notificação</div>
+          <div class="sound-setting">
+            <label class="sound-label"> Som do alarme </label>
 
-              <p class="notification-copy">
-                Receber aviso quando o tempo terminar
-              </p>
+            <div class="sound-row">
+              <select id="soundSelect">
+                <option value="system">Sistema</option>
+                <option value="chime">Chime</option>
+                <option value="digital">Digital</option>
+                <option value="ana">Ana</option>
+              </select>
+
+              <button
+                id="testSoundBtn"
+                class="icon-button"
+                aria-label="Testar som"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+
+                  <path d="M19 9a5 5 0 0 1 0 6"></path>
+
+                  <path d="M15 9a3 3 0 0 1 0 6"></path>
+                </svg>
+              </button>
             </div>
-
-            <button id="notifyBtn" class="secondary-button small-button">
-              Ativar
-            </button>
           </div>
         </div>
       </div>
