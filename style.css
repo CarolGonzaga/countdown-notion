@@ -3,28 +3,19 @@
   --card: #151517;
   --card2: #1c1c1f;
   --border: #2a2a2e;
-
   --text: #f5f5f5;
   --muted: #9b9b9b;
-
   --accent: #ffffff;
 }
 
 body.light {
   --bg: #f5f5f2;
-
   --card: #ffffff;
-
   --card2: #f1f1ee;
-
   --border: #e4e4e1;
-
   --text: #1b1b1b;
-
   --muted: #6a6a6a;
-
   --accent: #111111;
-
   --accent-soft: #e9e9e6;
 }
 
@@ -33,23 +24,17 @@ body {
   font-family: Inter, system-ui;
   background: var(--bg);
   color: var(--text);
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   min-height: 100vh;
 }
 
 .timer-card {
   width: 420px;
-
   background: var(--card);
-
   border-radius: 24px;
-
   border: 1px solid var(--border);
-
   padding: 16px;
 }
 
@@ -85,22 +70,16 @@ body {
 
 .input-group input {
   width: 70px;
-
   padding: 6px;
-
   border-radius: 8px;
-
   border: 1px solid var(--border);
-
   background: #101012;
-
   color: white;
 }
 
 .preset-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-
   gap: 8px;
   margin-bottom: 8px;
 }
@@ -108,7 +87,6 @@ body {
 .action-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-
   gap: 8px;
 }
 
@@ -144,17 +122,12 @@ button {
 .icon-button {
   width: 30px;
   height: 30px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   background: transparent;
-
   color: var(--muted);
-
   border-radius: 8px;
-
   cursor: pointer;
 }
 
@@ -188,14 +161,9 @@ button {
 
 .sound-setting select {
   flex: 1;
-
   padding: 6px;
-
   border-radius: 8px;
-
   background: #1c1c1f;
-
   color: white;
-
   border: 1px solid var(--border);
 }
