@@ -1,14 +1,17 @@
 const timeDisplay = document.getElementById('timeDisplay');
-const statusText = document.getElementById('status');
-const timerForm = document.getElementById('timerForm');
 const minutesInput = document.getElementById('minutesInput');
 const secondsInput = document.getElementById('secondsInput');
-const startButton = document.getElementById('startButton');
-const pauseButton = document.getElementById('pauseButton');
-const resetButton = document.getElementById('resetButton');
-const notificationButton = document.getElementById('notificationButton');
-const notificationHint = document.getElementById('notificationHint');
+
+const startBtn = document.getElementById('startBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+const settingsToggle = document.getElementById('settingsToggle');
+const settingsPanel = document.getElementById('settingsPanel');
+
 const themeToggle = document.getElementById('themeToggle');
+
+const notifyBtn = document.getElementById('notifyBtn');
 const presetButtons = document.querySelectorAll('.preset-button');
 
 let totalSeconds = 25 * 60;
@@ -18,8 +21,8 @@ let endTime = null;
 let isRunning = false;
 
 const savedTheme = localStorage.getItem('countdown-theme');
-if (savedTheme === 'dark') {
-  document.body.classList.add('dark');
+if (savedTheme === 'light') {
+  document.body.classList.add('light');
 }
 
 function formatTime(seconds) {
@@ -42,18 +45,17 @@ function syncInputsFromTimer() {
 function syncTimerFromInputs() {
   const minutes = Number(minutesInput.value) || 0;
   const seconds = Number(secondsInput.value) || 0;
+
   const normalizedSeconds = Math.min(Math.max(seconds, 0), 59);
   secondsInput.value = normalizedSeconds;
+
   totalSeconds = Math.min((minutes * 60) + normalizedSeconds, 359999);
   remainingSeconds = totalSeconds;
+
   updateDisplay();
 }
 
-function setStatus(message) {
-  statusText.textContent = message;
-}
-
-function stopAlarmClass() {
+function stopFinishedState() {
   document.body.classList.remove('finished');
 }
 
@@ -65,6 +67,11 @@ function playAlarm() {
   }
 
   const audioContext = new AudioContextClass();
+
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
+
   let delay = 0;
 
   [880, 659, 880, 659].forEach((frequency) => {
@@ -105,14 +112,38 @@ function sendNotification() {
   setTimeout(() => notification.close(), 6000);
 }
 
+function updateNotificationButton() {
+  if (!('Notification' in window)) {
+    notifyBtn.textContent = 'Indisponível';
+    notifyBtn.disabled = true;
+    return;
+  }
+
+  if (Notification.permission === 'granted') {
+    notifyBtn.textContent = 'Ativas';
+    notifyBtn.disabled = true;
+    return;
+  }
+
+  if (Notification.permission === 'denied') {
+    notifyBtn.textContent = 'Bloqueadas';
+    notifyBtn.disabled = true;
+    return;
+  }
+
+  notifyBtn.textContent = 'Ativar';
+  notifyBtn.disabled = false;
+}
+
 function finishTimer() {
   clearInterval(timerInterval);
   timerInterval = null;
   isRunning = false;
   remainingSeconds = 0;
+
   updateDisplay();
-  setStatus('Tempo finalizado');
   document.body.classList.add('finished');
+
   playAlarm();
   sendNotification();
 }
@@ -127,28 +158,24 @@ function tick() {
   }
 }
 
-function startTimer(event) {
-  if (event) {
-    event.preventDefault();
+function startTimer() {
+  if (isRunning) {
+    return;
   }
 
-  if (!isRunning) {
-    if (remainingSeconds <= 0) {
-      syncTimerFromInputs();
-    }
-
-    if (remainingSeconds <= 0) {
-      setStatus('Escolha um tempo maior que 0 segundos');
-      return;
-    }
-
-    stopAlarmClass();
-    isRunning = true;
-    endTime = Date.now() + (remainingSeconds * 1000);
-    timerInterval = setInterval(tick, 250);
-    setStatus('Contagem em andamento');
-    tick();
+  if (remainingSeconds <= 0) {
+    syncTimerFromInputs();
   }
+
+  if (remainingSeconds <= 0) {
+    return;
+  }
+
+  stopFinishedState();
+  isRunning = true;
+  endTime = Date.now() + (remainingSeconds * 1000);
+  timerInterval = setInterval(tick, 250);
+  tick();
 }
 
 function pauseTimer() {
@@ -159,66 +186,73 @@ function pauseTimer() {
   clearInterval(timerInterval);
   timerInterval = null;
   isRunning = false;
+
   const difference = Math.max(0, Math.round((endTime - Date.now()) / 1000));
   remainingSeconds = difference;
   updateDisplay();
-  setStatus('Temporizador pausado');
 }
 
 function resetTimer() {
   clearInterval(timerInterval);
   timerInterval = null;
   isRunning = false;
+
   syncTimerFromInputs();
-  setStatus('Pronto para começar');
-  stopAlarmClass();
+  stopFinishedState();
+}
+
+function toggleSettings() {
+  const isHidden = settingsPanel.hasAttribute('hidden');
+
+  if (isHidden) {
+    settingsPanel.removeAttribute('hidden');
+    settingsToggle.setAttribute('aria-expanded', 'true');
+    return;
+  }
+
+  settingsPanel.setAttribute('hidden', '');
+  settingsToggle.setAttribute('aria-expanded', 'false');
 }
 
 async function requestNotificationPermission() {
   if (!('Notification' in window)) {
-    notificationHint.textContent = 'Este navegador não suporta notificações.';
+    updateNotificationButton();
     return;
   }
 
   const permission = await Notification.requestPermission();
+  updateNotificationButton();
 
   if (permission === 'granted') {
-    notificationHint.textContent = 'Notificações ativadas.';
-    notificationButton.textContent = 'Notificações ativas';
-    notificationButton.disabled = true;
-    return;
+    sendNotification();
   }
-
-  notificationHint.textContent = 'Permissão não concedida. O alarme sonoro ainda pode funcionar.';
 }
 
 presetButtons.forEach((button) => {
   button.addEventListener('click', () => {
-    const minutes = Number(button.dataset.minutes || 0);
+    const minutes = Number(button.dataset.min || 0);
     minutesInput.value = minutes;
     secondsInput.value = 0;
     resetTimer();
   });
 });
 
-timerForm.addEventListener('submit', startTimer);
-pauseButton.addEventListener('click', pauseTimer);
-resetButton.addEventListener('click', resetTimer);
-notificationButton.addEventListener('click', requestNotificationPermission);
+startBtn.addEventListener('click', startTimer);
+pauseBtn.addEventListener('click', pauseTimer);
+resetBtn.addEventListener('click', resetTimer);
+
 minutesInput.addEventListener('change', resetTimer);
 secondsInput.addEventListener('change', resetTimer);
 
+settingsToggle.addEventListener('click', toggleSettings);
+notifyBtn.addEventListener('click', requestNotificationPermission);
+
 themeToggle.addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  const currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+  document.body.classList.toggle('light');
+  const currentTheme = document.body.classList.contains('light') ? 'light' : 'dark';
   localStorage.setItem('countdown-theme', currentTheme);
 });
 
-if ('Notification' in window && Notification.permission === 'granted') {
-  notificationHint.textContent = 'Notificações ativadas.';
-  notificationButton.textContent = 'Notificações ativas';
-  notificationButton.disabled = true;
-}
-
 syncInputsFromTimer();
 updateDisplay();
+updateNotificationButton();
